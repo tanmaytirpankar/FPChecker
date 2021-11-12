@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import collections
 import glob
@@ -185,7 +187,7 @@ if __name__ == '__main__':
 
     json_data = load_report(arguments.json_file)
 
-    # json_formatted_obj = json.dumps(histogram_data, indent=2)
+    # json_formatted_obj = json.dumps(json_data, indent=2)
     # print(json_formatted_obj)
 
     if arguments.refinement_level == 1:
