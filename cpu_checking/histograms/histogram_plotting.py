@@ -98,6 +98,53 @@ def histogram_per_program(plots_root_path, histogram_data):
                             plots_root_path,
                             plot_name + '.png')
 
+
+    return accumulated_exponent_dict
+
+# Generates exponent plots for each source code line recorded in the histogram_data in the
+# directory plots_root_path
+# Returns: nothing
+def histogram_ranges_per_program(plots_root_path, histogram_data):
+    create_directory(plots_root_path)
+
+    accumulated_exponent_dict = {'fp32': {}, 'fp64': {}}
+    accumulated_exponent_range_dict = {'fp32': {'low': 0, 'regular': 0, 'high': 0},
+                                       'fp64': {'low': 0, 'regular': 0, 'high': 0}}
+    plot_name = os.path.basename(histogram_data[0]['input'])
+
+    # Looping through each line recorded in histogram json file and accumulating exponent data
+    for line_data in histogram_data:
+        accumulated_exponent_dict = accumulate_over_key(accumulated_exponent_dict, line_data, 'fp32')
+        accumulated_exponent_dict = accumulate_over_key(accumulated_exponent_dict, line_data, 'fp64')
+
+    for exp, item in accumulated_exponent_dict['fp32'].items():
+        if int(exp) < -114:
+            accumulated_exponent_range_dict['fp32']['low'] += item
+        elif int(exp) >= -114 and int(exp) <= 114:
+            accumulated_exponent_range_dict['fp32']['regular'] += item
+        elif int(exp) > 114:
+            accumulated_exponent_range_dict['fp32']['high'] += item
+
+    for exp, item in accumulated_exponent_dict['fp64'].items():
+        if int(exp) < -920:
+            accumulated_exponent_range_dict['fp64']['low'] += item
+        elif int(exp) >= -920 and int(exp) <= 920:
+            accumulated_exponent_range_dict['fp64']['regular'] += item
+        elif int(exp) > 920:
+            accumulated_exponent_range_dict['fp64']['high'] += item
+
+    print(accumulated_exponent_range_dict)
+
+    # # Filling missing exponent records with 0s in fp32 and fp64 dictionaries for plotting purposes
+    # keys_set = merge_keys(accumulated_exponent_dict, ['fp32', 'fp64'])
+    #
+    # # Saving figure as the input name
+    # plot_exponent_histogram(list(keys_set),
+    #                         list(clean_up_field(accumulated_exponent_dict, 'fp32', keys_set).values()),
+    #                         list(clean_up_field(accumulated_exponent_dict, 'fp64', keys_set).values()),
+    #                         plots_root_path,
+    #                         plot_name + '.png')
+
     return accumulated_exponent_dict
 
 
@@ -196,3 +243,5 @@ if __name__ == '__main__':
         histogram_per_file(arguments.output_dir, json_data)
     elif arguments.refinement_level == 3:
         histogram_per_program(arguments.output_dir, json_data)
+    elif arguments.refinement_level == 4:
+        histogram_ranges_per_program(arguments.output_dir, json_data)
